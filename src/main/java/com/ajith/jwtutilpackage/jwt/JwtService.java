@@ -76,4 +76,8 @@ public class JwtService {
         }
         return null;
     }
+    public static String getTokenFromAuthHeader(String authHeader){
+       return authHeader.substring(7);
+    }
+
 }
