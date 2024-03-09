@@ -19,68 +19,65 @@ import java.util.function.Function;
 
 
 public class JwtService {
-
-    private static String jwtSecret;
-    public static void init(String jwtSecret) {
-       JwtService.jwtSecret = jwtSecret;
-    }
+    @Value ( "${application.security.jwt.secret-key}" )
+    private static String secretKey;
     @Value ( "${application.security.jwt.expiration}" )
     private static long jwtExpiration ;
 
     @Value ( "${application.security.jwt.refresh-token.expiration}" )
     private static long refreshExpiration ;
 
-//    public static String extractUsername (String token) {
-//
-//        return extractClaim (token, Claims::getSubject);
-//    }
+    public static String extractUsername (String token) {
 
-//
-//    public static <T>T extractClaim (String token, Function < Claims, T > claimsResolver) {
-//        final Claims claims = extractAllClaims ( token );
-//        return claimsResolver.apply ( claims );
-//    }
+        return extractClaim (token, Claims::getSubject);
+    }
+
+
+    public static <T>T extractClaim (String token, Function < Claims, T > claimsResolver) {
+        final Claims claims = extractAllClaims ( token );
+        return claimsResolver.apply ( claims );
+    }
     public static String getUsernameFromToken(String token){
         Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(getSigningKey ())
                 .parseClaimsJws(token)
                 .getBody();
         return  claims.getSubject();
     }
 
-//    public List <String> extractRolesFromToken(String token) {
-//        Claims claims = Jwts.parserBuilder ()
-//                .setSigningKey(getSigningKey())
-//                .build ()
-//                .parseClaimsJws(token)
-//                .getBody();
-//
-//        return (List < String >) claims.get("roles");
-//    }
+    public List <String> extractRolesFromToken(String token) {
+        Claims claims = Jwts.parserBuilder ()
+                .setSigningKey(getSigningKey())
+                .build ()
+                .parseClaimsJws(token)
+                .getBody();
 
-//    public boolean isTokenExpired (String token) {
-//        return extractExpiration(token).before(new Date());
-//    }
+        return (List < String >) claims.get("roles");
+    }
 
-//    public Date extractExpiration (String token) {
-//        return extractClaim ( token ,Claims::getExpiration );
-//    }
+    public boolean isTokenExpired (String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public Date extractExpiration (String token) {
+        return extractClaim ( token ,Claims::getExpiration );
+    }
 
 
 
-//    private static Claims extractAllClaims (String token) {
-//        return Jwts
-//                .parserBuilder ()
-//                .setSigningKey ( getSigningKey() )
-//                .build ()
-//                .parseClaimsJws ( token )
-//                .getBody ();
-//    }
+    private static Claims extractAllClaims (String token) {
+        return Jwts
+                .parserBuilder ()
+                .setSigningKey ( getSigningKey() )
+                .build ()
+                .parseClaimsJws ( token )
+                .getBody ();
+    }
 
-//    private static Key getSigningKey ( ) {
-//        byte[] keyBytes = Decoders.BASE64.decode (secretKey);
-//        return Keys.hmacShaKeyFor (keyBytes);
-//    }
+    public static Key getSigningKey ( ) {
+        byte[] keyBytes = Decoders.BASE64.decode (secretKey);
+        return Keys.hmacShaKeyFor (keyBytes);
+    }
 
     public static String getJWTFromRequest(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");
