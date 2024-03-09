@@ -19,8 +19,11 @@ import java.util.function.Function;
 
 
 public class JwtService {
-    @Value ( "${application.security.jwt.secret-key}" )
-    private static String secretKey;
+
+    private static String jwtSecret;
+    public static void init(String jwtSecret) {
+       JwtService.jwtSecret = jwtSecret;
+    }
     @Value ( "${application.security.jwt.expiration}" )
     private static long jwtExpiration ;
 
@@ -74,7 +77,7 @@ public class JwtService {
                 .getBody ();
     }
 
-    public static Key getSigningKey ( ) {
+    private static Key getSigningKey ( ) {
         byte[] keyBytes = Decoders.BASE64.decode (secretKey);
         return Keys.hmacShaKeyFor (keyBytes);
     }
