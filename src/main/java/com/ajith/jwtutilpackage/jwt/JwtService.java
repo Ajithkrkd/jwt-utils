@@ -27,15 +27,19 @@ public class JwtService {
     @Value ( "${application.security.jwt.refresh-token.expiration}" )
     private static long refreshExpiration ;
 
+    public static String extractUsername (String token) {
+
+        return extractClaim (token, Claims::getSubject);
+    }
+
 
     public static <T>T extractClaim (String token, Function < Claims, T > claimsResolver) {
         final Claims claims = extractAllClaims ( token );
         return claimsResolver.apply ( claims );
     }
     public static String getUsernameFromToken(String token){
-        Claims claims = Jwts.parserBuilder()
+        Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey ())
-                .build ()
                 .parseClaimsJws(token)
                 .getBody();
         return  claims.getSubject();
